@@ -35,14 +35,14 @@ python-multipart==0.0.9
 pip install -r requirements.txt
 ```
 
-DB 스키마 및 구조
-여러 사업체와 계정 과목, 거래내역을 저장
-회사별 계정과목/분류 결과를 관계형 구조로 표현
+DB 스키마 및 구조  
+여러 사업체와 계정 과목, 거래내역을 저장  
+회사별 계정과목/분류 결과를 관계형 구조로 표현  
 
-ERD 요약
-회사(Company)
-계정과목(Category, 회사별 소속)
-거래내역(Transaction, 회사/카테고리별 귀속 + 원본 데이터)
+ERD 요약  
+회사(Company)  
+계정과목(Category, 회사별 소속)  
+거래내역(Transaction, 회사/카테고리별 귀속 + 원본 데이터)  
 
 SQL 테이블
 ```txt
