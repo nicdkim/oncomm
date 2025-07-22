@@ -8,10 +8,18 @@ def upsert_company_and_categories(rules: dict):
         for company_id, rule_list in rules.items():
             if not session.query(Company).filter_by(id=company_id).first():
                 session.add(Company(id=company_id, name=company_id))
+        session.commit()
+
+        seen = set()
+        for company_id, rule_list in rules.items():
             for rule in rule_list:
                 cat_id = rule["category_id"]
                 cat_name = rule["category_name"]
-                if not session.query(Category).filter_by(id=cat_id).first():
+                key = (cat_id, company_id)
+                if key in seen:
+                    continue
+                seen.add(key)
+                if not session.query(Category).filter_by(id=cat_id, company_id=company_id).first():
                     session.add(Category(id=cat_id, name=cat_name, company_id=company_id))
         session.commit()
     finally:

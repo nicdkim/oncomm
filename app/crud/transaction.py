@@ -7,9 +7,9 @@ def create_transaction_records(records: list):
     try:
         for r in records:
             tx = Transaction(
-                date=r["date"],
-                description=r["description"],
-                amount=r["amount"],
+                date=r["거래일시"],
+                description=r["적요"],
+                amount=r["금액"],
                 company_id=r.get("company_id"),
                 category_id=r.get("category_id"),
                 category_name=r.get("category_name"),
