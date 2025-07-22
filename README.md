@@ -144,15 +144,15 @@ API/ORM 쿼리에서 company_id 필터링 누락/오류 확인
 ## 실행 및 테스트
 1) 패키지 설치  
 pip install -r requirements.txt   
-2) DB 초기화
-python init_db.py
-3) 서버 실행
-uvicorn app.mainLapp --reload
-4) API 테스트 (swagger)
+2) DB 초기화  
+python init_db.py  
+3) 서버 실행  
+uvicorn app.mainLapp --reload  
+4) API 테스트 (swagger)  
 http://127.0.0.1:8000/docs 접속  
 POST /api/v1/accounting/process  
 : bank_transactions.csv + rules.json 파일 업로드  
-GET /api/v1/accounting/records?companyId=com_1
-: companyId에 rules.json에 등록된 값 입력(com_1, com_2 등)
+GET /api/v1/accounting/records?companyId=com_1  
+: companyId에 rules.json에 등록된 값 입력(com_1, com_2 등)  
 거래내역 분류 결과 리스트 확인
 
