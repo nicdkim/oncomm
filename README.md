@@ -1,31 +1,30 @@
-AI 이커머스 경영 경리 프로그램
+# AI 이커머스 경영 경리 프로그램
+
 FastAPI 기반 자동 거래내역 분류/조회 시스템 (실무테스트 과제)
 
-1. 시스템 아키텍처
-◾ 기술 스택
-언어/프레임워크: Python 3.12, FastAPI
+---
 
-DB: SQLite (개발/테스트 환경에서 빠르고 간단하게 사용)
+## 1. 시스템 아키텍처
 
-ORM: SQLAlchemy
+### ◾ 기술 스택
 
-ETL/분류: Pandas
+- **언어/프레임워크:** Python 3.12, FastAPI
+- **DB:** SQLite (개발/테스트 환경에서 빠르고 간단하게 사용)
+- **ORM:** SQLAlchemy
+- **ETL/분류:** Pandas
+- **서버:** Uvicorn (ASGI)
 
-서버: Uvicorn (ASGI)
-
-◾ 설치 라이브러리 (requirements.txt)
-txt
-복사
-편집
+### ◾ 설치 라이브러리 (`requirements.txt`)
+```txt
 fastapi==0.111.0
 uvicorn==0.29.0
 sqlalchemy==2.0.30
 pandas==2.2.2
 pydantic==2.7.1
 python-multipart==0.0.9
-설치 방법
+설치 방법:
 
-nginx
+bash
 복사
 편집
 pip install -r requirements.txt
@@ -136,17 +135,17 @@ DB 로그/쿼리 감사, 배포 이력 체크
 
 6. 실행 및 테스트 가이드
 ◾ 1) 패키지 설치
-nginx
+bash
 복사
 편집
 pip install -r requirements.txt
 ◾ 2) DB 초기화
-nginx
+bash
 복사
 편집
 python init_db.py
 ◾ 3) 서버 실행
-lua
+bash
 복사
 편집
 uvicorn app.main:app --reload
@@ -160,3 +159,7 @@ bank_transactions.csv + rules.json 파일 업로드
 companyId: rules.json에 지정된 값 입력(com_1, com_2 등)
 
 거래내역 분류 결과 리스트 확인
+
+◾ 5) 예시 cURL
+curl -X GET "http://127.0.0.1:8000/api/v1/accounting/records?companyId=com_1" -H "accept: application/json"
+
