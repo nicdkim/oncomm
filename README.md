@@ -29,3 +29,7 @@ sqlalchemy==2.0.30
 pandas==2.2.2
 pydantic==2.7.1
 python-multipart==0.0.9
+
+### 설치 방법
+```txt
+pip install -r requirements.txt
