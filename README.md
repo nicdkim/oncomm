@@ -4,14 +4,18 @@ FastAPI 기반 자동 거래내역 분류/조회 시스템 (실무테스트 과�
 
 ---
 
-## 1. 시스템 아키텍처
+## A. 시스템 아키텍처
 
-### ◾ 기술 스택
+### ◾ 기술 스택 및 선정 이유
 
-- **언어/프레임워크:** Python 3.12, FastAPI
-- **DB:** SQLite (개발/테스트 환경에서 빠르고 간단하게 사용)
-- **ORM:** SQLAlchemy
-- **ETL/분류:** Pandas
+- **언어/프레임워크:** Python 3.12, FastAPI  
+  → 개발 생산성과 빠른 API 설계, Python 생태계 활용  
+- **DB:** SQLite  
+  → 가볍고 설정이 필요 없어 과제/테스트에 최적  
+- **ORM:** SQLAlchemy  
+  → 유지보수성과 DB 추상화  
+- **ETL/분류:** Pandas  
+  → 대용량 CSV, 데이터 가공 처리  
 - **서버:** Uvicorn (ASGI)
 
 ### ◾ 설치 라이브러리 (`requirements.txt`)
@@ -23,20 +27,21 @@ pandas==2.2.2
 pydantic==2.7.1
 python-multipart==0.0.9
 설치 방법:
-
-bash
-복사
-편집
 pip install -r requirements.txt
-2. DB 스키마
-[ERD 구조 요약]
+◾ DB 스키마 및 구조
+여러 사업체(회사)와 계정과목, 거래내역을 유연하게 저장
+
+회사별 계정과목/분류 결과를 관계형 구조로 표현
+
+ERD 요약
+
 회사(Company)
 
 계정과목(Category, 회사별 소속)
 
 거래내역(Transaction, 회사/카테고리별 귀속 + 원본데이터)
 
-[CREATE TABLE 구문]
+SQL 테이블
 
 CREATE TABLE companies (
   id TEXT PRIMARY KEY,
@@ -65,99 +70,85 @@ CREATE TABLE transactions (
   FOREIGN KEY(company_id) REFERENCES companies(id),
   FOREIGN KEY(category_id) REFERENCES categories(id)
 );
-컬럼명은 실제 CSV 포맷(한글 컬럼)과 일치하도록 구현함
 
-3. 핵심 자동 분류 로직
-rules.json 파일에 회사별/카테고리별 키워드 규칙이 정의됨
+## B. 핵심 자동 분류 로직
+rules.json 파일에 회사/카테고리/키워드 기반 규칙을 정의
 
-거래내역의 적요(설명)에 키워드가 포함된 경우 해당 회사/계정과목으로 귀속
+거래내역의 "적요"에 키워드가 포함되면 해당 회사/계정과목에 자동 분류
 
-일치하는 규칙이 없으면 "미분류" 처리
+어떤 규칙과도 일치하지 않으면 "미분류" 처리
 
-[예시]
-적요: "스타벅스 강남2호점" → company_id=com_2, category_id=cat_204, category_name=복리후생비
+예시
+
+적요: 스타벅스 강남2호점 → company_id=com_2, category_id=cat_204, category_name=복리후생비
 
 규칙 미일치 시 company_id/category_id 없음, category_name="미분류"
 
-[로직 확장 예시]
-금액 구간:
+로직 확장 방안
 
-rules.json에서 금액범위(amount_min, amount_max) 조건을 추가할 수 있음
+금액 구간: rules.json에 amount_min, amount_max 추가 → 로직에서 조건 분기
 
-제외 키워드:
+제외 키워드: 각 규칙에 exclude_keywords 필드 → 포함 시 분류 제외
 
-규칙별로 exclude_keywords 설정 후, 해당 키워드가 있으면 분류 제외
+복합/우선순위: rules.json 규칙 dict 확장, 분기문 추가
 
-우선순위/복합조건:
+## C. 보안 강화 방안
+민감 정보 저장
 
-규칙 dict구조 확장 및 분기 추가로 쉽게 대응 가능
+DB/파일 모두 AES256 등 강력한 암호화 적용
 
-4. 보안 설계
-민감 정보 저장:
+인증서/비밀번호 등은 환경변수 또는 키관리시스템(KMS)로 분리
 
-반드시 암호화 파일 저장(ex. AES256),
-비밀번호/키 등은 환경변수 또는 외부 키관리(KMS)로 분리 관리
+접근 제어
 
-접근 제어:
+사용자 인증(JWT 등), 회사별 접근 권한 분리
 
-인증/인가 및 회사별 접근 제한 필수 (예: JWT, OAuth2 적용)
+감사 로그
 
-감사 로그:
+모든 데이터 접근/다운로드/변경 이력 남김
 
-모든 데이터 접근/변경/다운로드 이력 기록
+네트워크
 
-네트워크:
+무조건 HTTPS(SSL) 사용, 백업도 암호화
 
-무조건 HTTPS(SSL), 백업도 암호화 저장
+DB 권한
 
-DB 권한:
+쿼리 시 항상 company_id 필터 필수 적용
 
-회사별 데이터 쿼리에서 항상 company_id 조건 필수 적용
+## D. 문제상황 해결책
+시나리오: 한 고객사의 거래 데이터가 다른 고객사 대시보드에 노출됨
 
-5. 문제 상황 대응책
-즉시조치:
+즉시조치
 
-서비스 중단, 노출 범위 파악/안내, 서버 및 감사 로그 확인
+서비스 일시 중지, 노출 범위 및 피해고객 파악, 관리자/고객 공지
 
-원인분석:
+원인분석
 
-API/ORM 코드에서 company_id 필터/권한 미적용 등 점검
+API/ORM 쿼리에서 company_id 필터링 누락/오류 확인
 
-DB 로그/쿼리 감사, 배포 이력 체크
+로그/DB 이력, 배포/코드 변경내역 점검
 
-재발방지:
+재발방지
 
-쿼리/API 테스트에 회사별 필터 케이스 추가
+회사별 쿼리/테스트케이스 의무화, 권한분리 로직 추가
 
-권한 분리/테스트 자동화, 정기 보안점검
+배포 전 자동화테스트, 정기 보안 점검
 
-6. 실행 및 테스트 가이드
-◾ 1) 패키지 설치
-bash
-복사
-편집
+실행 및 테스트 가이드
+1) 패키지 설치
 pip install -r requirements.txt
-◾ 2) DB 초기화
-bash
-복사
-편집
+2) DB 초기화
 python init_db.py
-◾ 3) 서버 실행
-bash
-복사
-편집
+3) 서버 실행
 uvicorn app.main:app --reload
-◾ 4) API 테스트 (Swagger UI)
+4) API 테스트 (Swagger UI)
 http://127.0.0.1:8000/docs 접속
 
-- POST /api/v1/accounting/process
-bank_transactions.csv + rules.json 파일 업로드
+POST /api/v1/accounting/process
+: bank_transactions.csv + rules.json 파일 업로드
 
-- GET /api/v1/accounting/records?companyId=com_1
-companyId: rules.json에 지정된 값 입력(com_1, com_2 등)
+GET /api/v1/accounting/records?companyId=com_1
+: companyId에 rules.json에 등록된 값 입력(com_1, com_2 등)
 
-거래내역 분류 결과 리스트 확인
-
-◾ 5) 예시 cURL
-curl -X GET "http://127.0.0.1:8000/api/v1/accounting/records?companyId=com_1" -H "accept: application/json"
-
+5) 예시 cURL
+curl -X GET "http://127.0.0.1:8000/api/v1/accounting/records?companyId=com_1" -H "accept: applicatio
