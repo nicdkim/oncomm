@@ -37,9 +37,7 @@ pip install -r requirements.txt
 거래내역(Transaction, 회사/카테고리별 귀속 + 원본데이터)
 
 [CREATE TABLE 구문]
-sql
-복사
-편집
+
 CREATE TABLE companies (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL
@@ -152,10 +150,10 @@ uvicorn app.main:app --reload
 ◾ 4) API 테스트 (Swagger UI)
 http://127.0.0.1:8000/docs 접속
 
-▶ POST /api/v1/accounting/process
+- POST /api/v1/accounting/process
 bank_transactions.csv + rules.json 파일 업로드
 
-▶ GET /api/v1/accounting/records?companyId=com_1
+- GET /api/v1/accounting/records?companyId=com_1
 companyId: rules.json에 지정된 값 입력(com_1, com_2 등)
 
 거래내역 분류 결과 리스트 확인
