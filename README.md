@@ -116,3 +116,43 @@ rules.json 파일 사용
 금액 구간: rules.json에 amount_min, amount_max 추가 → 로직에서 조건 분기  
 제외 키워드: 각 규칙에 exclude_keywords 필드 → 포함 시 분류 제외  
 복합/우선순위: rules.json 규칙 dict 확장, 분기문 추가
+
+## C. 보안 강화 방안
+- 민감 정보 저장:  
+DB/파일 모두 AES256 등 강력한 암호화 적용  
+인증서/비밀번호 등은 환경변수 또는 키관리시스템으로 분리  
+- 접근 제어:
+JWT로 회사별 접근 권한 분리
+- 감사로그
+모든 데이터 접근, 다운, 변경 이력 생성
+- 네트워크:
+HTTPS(SSL) 사용
+- DB 권한: 
+쿼리 시 항상 company_id 필터 적용
+
+## D. 문제 상황 해결책
+시나리오: 한 고객사의 거래 데이터가 다른 고객사 대시보드에 노출됨  
+1. 즉시 조치
+서비스 일시 중지, 노출 범위 및 피해고객 파악, 관리자/고객 공지  
+2. 원인분석  
+API/ORM 쿼리에서 company_id 필터링 누락/오류 확인  
+로그/DB 이력, 배포/코드 변경내역 점검  
+3. 재발방지  
+회사별 쿼리/테스트케이스 의무화, 권한분리 로직 추가  
+배포 전 자동화테스트, 정기 보안 점검  
+
+## 실행 및 테스트
+1) 패키지 설치  
+pip install -r requirements.txt   
+2) DB 초기화
+python init_db.py
+3) 서버 실행
+uvicorn app.mainLapp --reload
+4) API 테스트 (swagger)
+http://127.0.0.1:8000/docs 접속  
+POST /api/v1/accounting/process  
+: bank_transactions.csv + rules.json 파일 업로드  
+GET /api/v1/accounting/records?companyId=com_1
+: companyId에 rules.json에 등록된 값 입력(com_1, com_2 등)
+거래내역 분류 결과 리스트 확인
+
