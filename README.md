@@ -101,3 +101,18 @@ CREATE TABLE transactions (
   FOREIGN KEY(category_id) REFERENCES categories(id)
 );
 ```
+---
+
+## B. 핵심 자동 분류 로직
+rules.json 파일 사용  
+거래내역의 적요에 키워드가 포함되면 해당 회사/계정과목에 자동 분류  
+어던 규칙과도 일치하지 않으면 미분류로 처리   
+
+예시   
+적요: 스타벅스 강남2호점 -> company_id=com_2, category_id=cat_204, category_name=복리후생비  
+규칙 불일치시 company_id/category_id 없음, category_name="미분류"
+
+로직 확장 방안
+금액 구간: rules.json에 amount_min, amount_max 추가 → 로직에서 조건 분기  
+제외 키워드: 각 규칙에 exclude_keywords 필드 → 포함 시 분류 제외  
+복합/우선순위: rules.json 규칙 dict 확장, 분기문 추가
